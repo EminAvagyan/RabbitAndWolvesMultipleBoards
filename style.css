@@ -1,5 +1,8 @@
 body{
     background-color: grey;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 .game_size_buttons{
     min-width: 300px;
@@ -16,8 +19,20 @@ body{
     padding-top: 20px;
 
 }
-.new_game_area{
-    margin-top: 20px;
+
+.create_new_game_area{
+    margin-top: 50px;
+    border: 2px solid green;
+    font-size: 25px;
+    width: 200px;
+    padding: 4px;
+    border-radius: 20px;
+    outline: none;
+    background-color: #FFEDB2;
+    cursor: pointer;
+    text-align: center;
+    color: black;
+    
 }
 .wrapper{
     display: flex;

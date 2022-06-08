@@ -63,6 +63,7 @@ function createButtonsandBoard() {
   newWrapper.setAttribute("class", "wrapper")
   newWrapper.innerHTML = template
   container.append(newWrapper)
+  
 }
 
 const gallery = new Array()
