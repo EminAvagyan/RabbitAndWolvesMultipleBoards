@@ -7,22 +7,40 @@
 
   <body>
     <div class="container" id="container">
-      <div id="wrapper">
-        <div class="header">
-          <button onclick="gameStart()">Select Size</button>
-          <select id="select">
-            <option value="5">5X5</option>
-            <option value="7">7X7</option>
-            <option value="10">10X10</option>
-          </select>
+      <div class = "wrapper" id = "wrapper">
+        <div id="main_area" class="main_area">
+          <div class="header" id="header">
+            <div class="game_size_buttons">
+              <button onclick="gameStart('')">Select Size</button>
+              <select id="select">
+                <option value="5">5X5</option>
+                <option value="7">7X7</option>
+                <option value="10">10X10</option>
+              </select>
+            </div>
+            <div class="game_area" id="game_area"></div>
+          </div>
+          <div id="message_div" class="message_div">
+            <h2></h2>
+            <button onclick="gameStart('')">Start Again</button>
+          </div>
         </div>
-        <div class="game_area" id="game_area"></div>
+        <div class="game_buttons" id="game_buttons">
+          <div class="up_button">
+            <div id="up" class="up"></div>
+          </div>
+          <div class="side_buttons">
+            <div id="left" class="left"></div>
+            <div id="right" class="right"></div>
+          </div>
+          <div class="down_button">
+            <div id="down" class="down"></div>
+          </div>
+        </div>
       </div>
+      <button onclick="drawNewBoard()" id = "new_game_area" class = "new_game_area">New Board</button>
     </div>
-    <div id="message_div" class="message_div">
-      <h2></h2>
-      <button onclick="gameStart()">Start Again</button>
-    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
