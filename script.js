@@ -87,7 +87,6 @@ function gameStart(gameBoardNumber) {
     gameMessage: "",
     gameBoardNumber: gameBoardNumber,
   }
-  console.log(gameState)
   removeMovementEventListeners(gameState)
   setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
   insertAllCharacters(gameState.gameArray)
