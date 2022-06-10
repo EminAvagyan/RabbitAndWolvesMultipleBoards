@@ -11,17 +11,14 @@ const down = 1
 const left = 2
 const right = 3
 
-
-
-let count = 0
-
+let gameBoardNumber = 0
 
 function getTemplate(templateNumber){
-  const markup = `
+  const template = `
   <div id="${"main_area"+ templateNumber}" class="main_area">
     <div class="header" id="${"header"+ templateNumber}">
       <div class="game_size_buttons">
-        <button onclick="gameStart(${templateNumber})">Select Size</button>
+        <button onclick="gameStart(${templateNumber})" class = "button-32">Start the game</button>
         <select id="${"select"+ templateNumber}">
           <option value="5">5X5</option>
           <option value="7">7X7</option>
@@ -48,22 +45,21 @@ function getTemplate(templateNumber){
   </div>
   </div>
   `
-  return markup
+  return template
 }
 function drawNewBoard() {
   createButtonsandBoard()
 }
 
 function createButtonsandBoard() {
-  ++count
+  ++gameBoardNumber
   const container = document.getElementById("container")
-  const template = getTemplate(count)
+  const template = getTemplate(gameBoardNumber)
   const newWrapper = document.createElement("div")
-  newWrapper.id = "wrapper" + count
+  newWrapper.id = "wrapper" + gameBoardNumber
   newWrapper.setAttribute("class", "wrapper")
   newWrapper.innerHTML = template
   container.append(newWrapper)
-  
 }
 
 const gallery = new Array()
@@ -73,55 +69,52 @@ gallery[2] = "images/ban.png"
 gallery[3] = "images/home.png"
 gallery[4] = "images/rabbit.png"
 
-function gameStart(count) {
-  const select = "select" + count
-  console.log(select)
+function gameStart(gameBoardNumber) {
+  const select = "select" + gameBoardNumber
   const gameAreaSize = parseInt(document.getElementById(select).value)
   const gameArray = createGameArray(gameAreaSize)
   const gameState = {
     gameArray: gameArray,
     gameRunning: true,
     gameMessage: "",
-    count: count,
+    gameBoardNumber: gameBoardNumber,
   }
-  setGameAreWidth(gameAreaSize, gameState.count)
-  
+  removeMovementEventListeners(gameState)
+  setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
   insertAllCharacters(gameState.gameArray)
-  hideGameMessages(gameState.count)
+  hideGameMessages(gameState)
   eventListenersForRabbit(gameState, gameAreaSize)
-  clearGameArea(count)
+  clearGameArea(gameState)
   drawGameArea(gameState)
-  
 }
 
-function setGameAreWidth(gameAreaSize, count) {
-  const gameAreaId = "game_area" + count
+function setGameAreWidth(gameAreaSize, gameBoardNumber) {
+  const gameAreaId = "game_area" + gameBoardNumber
   const width = gameAreaSize * 60 + 20 + "px"
   const gameAreaDiv = document.getElementById(gameAreaId)
   gameAreaDiv.style.width = width
 }
 function eventListenersForRabbit(gameObject) {
-    const upId = "up"+gameObject.count
-    const moveUp = document.getElementById(upId)
-    moveUp.onclick = function () {
-      eventKeysFunctions(gameObject, up)
-    }
-    const downId = "down"+gameObject.count
-    const moveDown = document.getElementById(downId)
-    moveDown.onclick = function () {
-      eventKeysFunctions(gameObject, down)
-    }
-    const leftId = "left"+gameObject.count
-    const moveLeft = document.getElementById(leftId)
-    moveLeft.onclick = function () {
-      eventKeysFunctions(gameObject, left)
-    }
-    const rightId = "right"+gameObject.count
-    const moveRight = document.getElementById(rightId)
-    moveRight.onclick = function () {
-      eventKeysFunctions(gameObject, right)
-    }
 
+    const moveUp = getHtmlElement(gameObject, "up")
+    moveUp.addEventListener('click', function listenerUp() {
+        eventKeysFunctions(gameObject, up)
+      })
+    
+    const moveDown = getHtmlElement(gameObject, "down")
+    moveDown.addEventListener('click',function () {
+      eventKeysFunctions(gameObject, down)
+    })
+
+    const moveLeft = getHtmlElement(gameObject, "left")
+    moveLeft.addEventListener('click', function () {
+      eventKeysFunctions(gameObject, left)
+    })
+
+    const moveRight = getHtmlElement(gameObject, "right")
+    moveRight.addEventListener('click', function () {
+      eventKeysFunctions(gameObject, right)
+    })
 }
 
 function eventKeysFunctions(gameObject, direction) {
@@ -134,70 +127,62 @@ function eventKeysFunctions(gameObject, direction) {
   } else {
     return
   }
-  
 }
 
 function changeWolvesPositions(gameObject) {
   const wolvesCords = findCharacterCords(gameObject.gameArray, WOLF)
 
-  wolvesCords.forEach((singleWolf) => {
-    if (gameObject.gameRunning === true) {
-      changeSingleWolfPosition(gameObject, singleWolf)
-      clearGameArea(gameObject.count)
-      drawGameArea(gameObject)
-    } else {
-      showGameMessages(gameObject)
-    }
-  })
+  wolvesCords.forEach( wolf =>changeSingleWolfPosition(gameObject, wolf))
+  clearGameArea(gameObject)
+  drawGameArea(gameObject)
 }
 
-function changeSingleWolfPosition(gameObject, singleWolf) {
+function changeSingleWolfPosition(gameObject, wolf) {
   const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)
-
-  const cellsArround = findEmptyCellsArroundWolf(
-    gameObject.gameArray,
-    singleWolf
-  )
-
+  const cellsArround = findEmptyCellsArroundWolf(gameObject.gameArray,wolf)
   const freeCells = checkCells(cellsArround, gameObject)
-
-  if (gameObject.gameRunning === true) {
+  if (gameObject.gameRunning === false) {
+    showGameMessages(gameObject)
+  } else {
     const distanceArray = calculateDistanceOfCells(freeCells, rabbitCords)
     const closestCell = freeCells[getClosestIndex(distanceArray)]
-    placeWolvesIntoNewCells(gameObject.gameArray, closestCell, singleWolf)
-  } else {
-    showGameMessages(gameObject)
+    placeWolvesIntoNewCells(gameObject.gameArray, closestCell, wolf)
   }
 }
 
-function isCharacter(gameArray, cellsArround, character) {
+function findCharacter(gameArray, cellsArround, character) {
   const cellsArroundWolf = cellsArround.filter(
     ([x, y]) => gameArray[x][y] === character
   )
   return cellsArroundWolf
 }
 
+function findRabbit(gameArray, cellsArround){
+  const rabbitCoords = findCharacter(gameArray, cellsArround, RABBIT)
+  return rabbitCoords.length>0
+}
+
+function findEmptyCells(gameArray, cellsArround){
+  const cellsCoords = findCharacter(gameArray, cellsArround, EMPTY_CELL)
+  return cellsCoords
+}
+
 function checkCells(cellsArround, gameObject) {
-  const checkIFRabbit = isCharacter(gameObject.gameArray, cellsArround, RABBIT)
-  if (checkIFRabbit.length > 0) {
-    gameObject.gameRunning = false
-    gameObject.gameMessage = "over"
+  const checkIFRabbit = findRabbit(gameObject.gameArray, cellsArround)
+  if (checkIFRabbit) {
+    changeGameStatus(gameObject, "over")
     return
   } else {
-    const emptyCells = isCharacter(
-      gameObject.gameArray,
-      cellsArround,
-      EMPTY_CELL
-    )
+    const emptyCells = findEmptyCells(gameObject.gameArray, cellsArround)
     return emptyCells
   }
 }
 
-function checkEmptyCells([x, y], array) {
-  return x >= 0 && x < array.length && y >= 0 && y < array.length
+function isInRange([x, y], gameArray) {
+  return x >= 0 && x < gameArray.length && y >= 0 && y < gameArray.length
 }
 
-function findEmptyCellsArroundWolf(array, [x, y]) {
+function findEmptyCellsArroundWolf(gameArray, [x, y]) {
   let movementDirections = [
     [x, y],
     [x - 1, y],
@@ -205,16 +190,12 @@ function findEmptyCellsArroundWolf(array, [x, y]) {
     [x, y - 1],
     [x, y + 1],
   ]
-  const emptyCells = movementDirections.filter((cell) =>
-    checkEmptyCells(cell, array)
-  )
+  const emptyCells = movementDirections.filter((cell) =>isInRange(cell, gameArray))
   return emptyCells
 }
 
 function calculateDistanceOfCells(freeVellsArray, rabbitCords) {
-  return freeVellsArray.map((cord) =>
-    calculateDistanceFromRabbit(cord, rabbitCords)
-  )
+  return freeVellsArray.map( cord => calculateDistanceFromRabbit(cord, rabbitCords))
 }
 
 function getClosestIndex(distanceArray) {
@@ -224,17 +205,16 @@ function getClosestIndex(distanceArray) {
 
 const equals = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 
-function placeWolvesIntoNewCells(array, wolvesCords, item) {
+function placeWolvesIntoNewCells(gameArray, wolvesCords, item) {
   if (wolvesCords != undefined) {
-    const rabbitCords = findCharacterCords(array, RABBIT)
+    const rabbitCords = findCharacterCords(gameArray, RABBIT)
     const [x, y] = wolvesCords
     const [k, p] = item
     if (equals([x, y], rabbitCords)) {
-      gameObject.gameRunning = false
-      gameObject.gameMessage = "over"
+      changeGameStatus(gameObject, "over")
     } else {
-      array[x][y] = WOLF
-      array[k][p] = EMPTY_CELL
+      gameArray[x][y] = WOLF
+      gameArray[k][p] = EMPTY_CELL
     }
   }
 }
@@ -246,20 +226,19 @@ function calculateDistanceFromRabbit([x1, y1], [[x2, y2]]) {
 function checkDirAndMove(newCords, napCords, gameObject) {
   const [j, k] = newCords
   const [x, y] = napCords
-  if (gameObject.gameArray[j][k] == EMPTY_CELL) {
-    gameObject.gameArray[j][k] = RABBIT
-    gameObject.gameArray[x][y] = EMPTY_CELL
-  } else if (gameObject.gameArray[j][k] === HOUSE) {
-    gameObject.gameArray[x][y] = EMPTY_CELL
-    gameObject.gameRunning = false
-    gameObject.gameMessage = "win"
+  const gameArray = gameObject.gameArray
+  if (gameArray[j][k] == EMPTY_CELL) {
+    gameArray[j][k] = RABBIT
+    gameArray[x][y] = EMPTY_CELL
+  } else if (gameArray[j][k] === HOUSE) {
+    gameArray[x][y] = EMPTY_CELL
+    changeGameStatus(gameObject, "win") 
     return
-  } else if (gameObject.gameArray[j][k] === FENCE) {
+  } else if (gameArray[j][k] === FENCE) {
     return
   }
-  if (gameObject.gameArray[j][k] === WOLF) {
-    gameObject.gameRunning = false
-    gameObject.gameMessage = "over"
+  if (gameArray[j][k] === WOLF) {
+    changeGameStatus(gameObject, "over")
     return
   }
 }
@@ -274,7 +253,7 @@ function getEventDirection([[x, y]]) {
   return direction
 }
 
-function findCharacterCords(array, character) {
+function findCharacterCords(gameArray, character) {
   const findInMatrix = function (accumulator, row, x) {
     row.forEach((element, y) => {
       if (element === character) {
@@ -283,61 +262,59 @@ function findCharacterCords(array, character) {
     })
     return accumulator
   }
-  return array.reduce(findInMatrix, [])
+  return gameArray.reduce(findInMatrix, [])
 }
 
-function insertAllCharacters(array) {
-  const wolvesCount = ((array.length - 1) / 100) * 60
-  const fenceCount = ((array.length - 1) / 100) * 40
-  insertCharactersIntoArray(array, WOLF, wolvesCount)
-  insertCharactersIntoArray(array, FENCE, fenceCount)
-  insertCharactersIntoArray(array, HOUSE, 1)
-  insertCharactersIntoArray(array, RABBIT, 1)
+function insertAllCharacters(gameArray) {
+  const wolvesgameBoardNumber = ((gameArray.length - 1) / 100) * 60
+  const fencegameBoardNumber = ((gameArray.length - 1) / 100) * 40
+  insertCharactersIntoArray(gameArray, WOLF, wolvesgameBoardNumber)
+  insertCharactersIntoArray(gameArray, FENCE, fencegameBoardNumber)
+  insertCharactersIntoArray(gameArray, HOUSE, 1)
+  insertCharactersIntoArray(gameArray, RABBIT, 1)
 }
 
 function createGameArray(gameAreaSize) {
-  const gameCondition = new Array(gameAreaSize)
+  const gameCondition = new gameArray(gameAreaSize)
     .fill(EMPTY_CELL)
-    .map(() => new Array(gameAreaSize).fill(EMPTY_CELL))
+    .map(() => new gameArray(gameAreaSize).fill(EMPTY_CELL))
 
   return gameCondition
 }
 
-function insertSingleCharacter(cord, myArray, character) {
+function insertSingleCharacter(cord, gameArray, character) {
   const x = cord[X]
   const y = cord[Y]
-  myArray[x][y] = character
+  gameArray[x][y] = character
 }
 
-function findEmptyCell(myArray) {
-  const randomX = Math.floor(Math.random() * myArray.length)
-  const randomY = Math.floor(Math.random() * myArray.length)
-  if (myArray[randomX][randomY] === EMPTY_CELL) {
+function findEmptyCell(gameArray) {
+  const randomX = Math.floor(Math.random() * gameArray.length)
+  const randomY = Math.floor(Math.random() * gameArray.length)
+  if (gameArray[randomX][randomY] === EMPTY_CELL) {
     return [randomX, randomY]
   } else {
-    return findEmptyCell(myArray)
+    return findEmptyCell(gameArray)
   }
 }
 
-function insertCharactersIntoArray(myArray, character, count) {
-  for (let i = 0; i < count; i++) {
-    const cords = findEmptyCell(myArray)
-    insertSingleCharacter(cords, myArray, character)
+function insertCharactersIntoArray(gameArray, character, gameBoardNumber) {
+  for (let i = 0; i < gameBoardNumber
+
+; i++) {
+    const cords = findEmptyCell(gameArray)
+    insertSingleCharacter(cords, gameArray, character)
   }
-  return myArray
+  return gameArray
 }
 
-function clearGameArea(count) {
-  const gameAreaId = "game_area" + count
-  const containerNode = document.getElementById(gameAreaId)
+function clearGameArea(gameObject) {
+  const containerNode = getHtmlElement(gameObject, "game_area")
   containerNode.innerHTML = ""
 }
 
-function createInnerDivs(cellIndex, count) {
-  const gameAreaId = "game_area" + count
-  console.log(gameAreaId)
-  console.log(cellIndex)
-  const containerNode = document.getElementById(gameAreaId)
+function createInnerDivs(cellIndex, gameObject) {
+  const containerNode = getHtmlElement(gameObject, "game_area")
   const div = document.createElement("div")
   div.setAttribute("id", cellIndex)
   containerNode.append(div)
@@ -354,8 +331,8 @@ function drawGameArea(gameObject) {
   gameArray = gameObject.gameArray
   gameArray.forEach((row, i) => {
     row.forEach((column, j) => {
-      const cellIndex = gameObject.count.toString() + i.toString() + j.toString()
-      createInnerDivs(cellIndex, gameObject.count)
+      const cellIndex = gameObject.gameBoardNumber.toString() + i.toString() + j.toString()
+      createInnerDivs(cellIndex, gameObject)
       if (column === RABBIT) {
         insertCharacterImage(RABBIT, cellIndex)
       }
@@ -372,29 +349,26 @@ function drawGameArea(gameObject) {
   })
 }
 
-function hideGameMessages(count) {
-  const message_div ="message_div" + count
-  const mainDiv = document.getElementById(message_div)
+function hideGameMessages(gameObject) {
+  const mainDiv = getHtmlElement(gameObject, "message_div")
   mainDiv.style.display = "none"
-  const header = "header" + count
-  const gameBoard = document.getElementById(header)
+
+  const gameBoard = getHtmlElement(gameObject, "header")
   gameBoard.style.display = "block"
 }
 
 function showGameMessages(gameObject) {
-  const message_div = "message_div" + gameObject.count
-  const mainDiv = document.getElementById(message_div)
-  const message_div_h2 = "message_div" + gameObject.count + ">h2"
+  const message_div = getHtmlElement(gameObject, "message_div")
+  const message_div_h2 = "#message_div" + gameObject.gameBoardNumber + ">h2"
   const message = document.querySelector(message_div_h2)
-  const header = "header" + gameObject.count
-  const gameBoard = document.getElementById(header)
+  const gameBoard = getHtmlElement(gameObject, "header")
   gameBoard.style.display = "none"
-  if (gameObject.gameStatus === "over") {
+  if (gameObject.gameMessage === 'over') {
     message.innerText = "Game over"
-  } else if (gameObject.gameStatus === "win") {
+  } else if (gameObject.gameMessage === "win") {
     message.innerText = "You win"
   }
-  mainDiv.style.display = "block"
+  message_div.style.display = "block"
 }
 
 function getPossibleMoves([x, y]) {
@@ -406,21 +380,42 @@ function getPossibleMoves([x, y]) {
   ]
 }
 
-function correctMoves(cordsArray, array) {
+function correctMoves(cordsArray, gameArray) {
   const correctedArray = cordsArray.map(([x, y]) => {
     if (x < 0) {
-      x = array.length - 1
+      x = gameArray.length - 1
     }
-    if (x > array.length - 1) {
+    if (x > gameArray.length - 1) {
       x = 0
     }
     if (y < 0) {
-      y = array.length - 1
+      y = gameArray.length - 1
     }
-    if (y > array.length - 1) {
+    if (y > gameArray.length - 1) {
       y = 0
     }
     return [x, y]
   })
   return correctedArray
+}
+
+function changeGameStatus(gameObject, winOrLose){
+    gameObject.gameRunning = false
+    gameObject.gameMessage = winOrLose
+}
+
+function removeListener(element) {
+  const newBtnElement = element.cloneNode(true)
+  element.parentNode.replaceChild(newBtnElement, element)
+}
+
+function getHtmlElement(gameObject, elementId){
+  return document.getElementById(elementId + gameObject.gameBoardNumber)
+}
+
+function removeMovementEventListeners(gameObject){
+  removeListener(getHtmlElement(gameObject, "up"))
+  removeListener(getHtmlElement(gameObject, "down"))
+  removeListener(getHtmlElement(gameObject, "right"))
+  removeListener(getHtmlElement(gameObject, "left"))
 }

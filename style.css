@@ -4,6 +4,10 @@ body{
     flex-direction: column;
     align-items: center;
 }
+select{
+    border-radius: 10px;
+    margin-left: 3px;
+}
 .game_size_buttons{
     min-width: 300px;
     display: flex;
@@ -20,19 +24,53 @@ body{
 
 }
 
+.button-32 {
+  background-color: #fff000;
+  border-radius: 12px;
+  color: #000;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 10px 15px;
+  text-align: center;
+  transition: 200ms;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  font-size: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-32:not(:disabled):hover,
+.button-32:not(:disabled):focus {
+  outline: 0;
+  background: #f4e603;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.2), 0 3px 8px 0 rgba(0,0,0,.15);
+}
+
+.button-32:disabled {
+  filter: saturate(0.2) opacity(0.5);
+  -webkit-filter: saturate(0.2) opacity(0.5);
+  cursor: not-allowed;
+}
 .create_new_game_area{
     margin-top: 50px;
-    border: 2px solid green;
+    border: 2px solid grey;
     font-size: 25px;
     width: 200px;
     padding: 4px;
     border-radius: 20px;
     outline: none;
-    background-color: #FFEDB2;
+    background-color: #f4e603;
     cursor: pointer;
     text-align: center;
     color: black;
     
+}
+.create_new_game_area:hover{
+background-color: #FF7019;
+color: white;
 }
 .wrapper{
     display: flex;
@@ -126,42 +164,42 @@ body{
     height: 0;
     border: 50px solid transparent;
     border-top: 0;
-    border-bottom: 40px solid green;
+    border-bottom: 40px solid #FF7019;
 }
 
 .up:hover{
-    border-bottom: 40px solid greenyellow;
+    border-bottom: 40px solid #f4e603;
 }
 .down{
     width: 0;
     height: 0;
     border: 50px solid transparent;
     border-top: 0;
-    border-bottom: 40px solid green;
+    border-bottom: 40px solid #FF7019;
     transform: rotate(180deg);
 }
 .down:hover{
-    border-bottom: 40px solid greenyellow;
+    border-bottom: 40px solid #f4e603;
 }
 .left{
     width: 0;
     height: 0;
     border: 50px solid transparent;
     border-top: 0;
-    border-bottom: 40px solid green;
+    border-bottom: 40px solid #FF7019;
     transform: rotate(270deg);
 }
 .left:hover{
-    border-bottom: 40px solid greenyellow;
+    border-bottom: 40px solid #f4e603;
 }
 .right{
     width: 0;
     height: 0;
     border: 50px solid transparent;
     border-top: 0;
-    border-bottom: 40px solid green;
+    border-bottom: 40px solid #FF7019;
     transform: rotate(90deg);
 }
 .right:hover{
-    border-bottom: 40px solid greenyellow;
+    border-bottom: 40px solid #f4e603;
 }
