@@ -12,36 +12,37 @@ const left = 2
 const right = 3
 
 let gameBoardNumber = 0
-
-function getTemplate(templateNumber){
+const createGameArea = document.getElementById("create_new_game_area")
+createGameArea.addEventListener("click", drawNewBoard)
+function getTemplate(templateNumber) {
   const template = `
-  <div id="${"main_area"+ templateNumber}" class="main_area">
-    <div class="header" id="${"header"+ templateNumber}">
+  <div id="${"main_area" + templateNumber}" class="main_area">
+    <div class="header" id="${"header" + templateNumber}">
       <div class="game_size_buttons">
-        <button onclick="gameStart(${templateNumber})" class = "button-32">Start the game</button>
-        <select id="${"select"+ templateNumber}">
+        <button class = "game_start_btn${templateNumber}" class = "button-32">Start the game</button>
+        <select id="${"select" + templateNumber}">
           <option value="5">5X5</option>
           <option value="7">7X7</option>
           <option value="10">10X10</option>
         </select>
       </div>
-    <div class="game_area" id="${"game_area"+ templateNumber}"></div>
+    <div class="game_area" id="${"game_area" + templateNumber}"></div>
   </div>
-  <div id="${"message_div"+ templateNumber}" class="message_div">
+  <div id="${"message_div" + templateNumber}" class="message_div">
     <h2></h2>
-    <button onclick="gameStart(${templateNumber})">Start Again</button>
+    <button class = "game_start_btn${templateNumber}">Start Again</button>
   </div>
   </div>
-  <div class="game_buttons" id="${"game_buttons"+ templateNumber}">
+  <div class="game_buttons" id="${"game_buttons" + templateNumber}">
   <div class="up_button">
-    <div id="${"up"+ templateNumber}" class="up"></div>
+    <div id="${"up" + templateNumber}" class="up"></div>
   </div>
   <div class="side_buttons">
-    <div id="${"left"+ templateNumber}" class="left"></div>
-    <div id="${"right"+ templateNumber}" class="right"></div>
+    <div id="${"left" + templateNumber}" class="left"></div>
+    <div id="${"right" + templateNumber}" class="right"></div>
   </div>
   <div class="down_button">
-    <div id="${"down"+ templateNumber}" class="down"></div>
+    <div id="${"down" + templateNumber}" class="down"></div>
   </div>
   </div>
   `
@@ -49,6 +50,7 @@ function getTemplate(templateNumber){
 }
 function drawNewBoard() {
   createButtonsandBoard()
+  addGameStartEventListeners()
 }
 
 function createButtonsandBoard() {
@@ -61,7 +63,14 @@ function createButtonsandBoard() {
   newWrapper.innerHTML = template
   container.append(newWrapper)
 }
-
+function addGameStartEventListeners() {
+  const startButton = document.getElementsByClassName(
+    `game_start_btn${gameBoardNumber}`
+  )
+  for (let i = 0; i < startButton.length; i++) {
+    startButton[i].addEventListener("click", () => gameStart(gameBoardNumber))
+  }
+}
 const gallery = new Array()
 
 gallery[1] = "images/gamewolf.png"
@@ -95,30 +104,29 @@ function setGameAreWidth(gameAreaSize, gameBoardNumber) {
   gameAreaDiv.style.width = width
 }
 function eventListenersForRabbit(gameObject) {
+  const moveUp = getHtmlElement(gameObject, "up")
+  moveUp.addEventListener("click", function listenerUp() {
+    eventKeysFunctions(gameObject, up)
+  })
 
-    const moveUp = getHtmlElement(gameObject, "up")
-    moveUp.addEventListener('click', function listenerUp() {
-        eventKeysFunctions(gameObject, up)
-      })
-    
-    const moveDown = getHtmlElement(gameObject, "down")
-    moveDown.addEventListener('click',function () {
-      eventKeysFunctions(gameObject, down)
-    })
+  const moveDown = getHtmlElement(gameObject, "down")
+  moveDown.addEventListener("click", function () {
+    eventKeysFunctions(gameObject, down)
+  })
 
-    const moveLeft = getHtmlElement(gameObject, "left")
-    moveLeft.addEventListener('click', function () {
-      eventKeysFunctions(gameObject, left)
-    })
+  const moveLeft = getHtmlElement(gameObject, "left")
+  moveLeft.addEventListener("click", function () {
+    eventKeysFunctions(gameObject, left)
+  })
 
-    const moveRight = getHtmlElement(gameObject, "right")
-    moveRight.addEventListener('click', function () {
-      eventKeysFunctions(gameObject, right)
-    })
+  const moveRight = getHtmlElement(gameObject, "right")
+  moveRight.addEventListener("click", function () {
+    eventKeysFunctions(gameObject, right)
+  })
 }
 
 function eventKeysFunctions(gameObject, direction) {
-  if(gameObject.gameRunning === true){
+  if (gameObject.gameRunning === true) {
     const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)[0]
     const moves = getPossibleMoves(rabbitCords)
     const allmoves = correctMoves(moves, gameObject.gameArray)
@@ -132,14 +140,14 @@ function eventKeysFunctions(gameObject, direction) {
 function changeWolvesPositions(gameObject) {
   const wolvesCords = findCharacterCords(gameObject.gameArray, WOLF)
 
-  wolvesCords.forEach( wolf =>changeSingleWolfPosition(gameObject, wolf))
+  wolvesCords.forEach((wolf) => changeSingleWolfPosition(gameObject, wolf))
   clearGameArea(gameObject)
   drawGameArea(gameObject)
 }
 
 function changeSingleWolfPosition(gameObject, wolf) {
   const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)
-  const cellsArround = findEmptyCellsArroundWolf(gameObject.gameArray,wolf)
+  const cellsArround = findEmptyCellsArroundWolf(gameObject.gameArray, wolf)
   const freeCells = checkCells(cellsArround, gameObject)
   if (gameObject.gameRunning === false) {
     showGameMessages(gameObject)
@@ -157,12 +165,12 @@ function findCharacter(gameArray, cellsArround, character) {
   return cellsArroundWolf
 }
 
-function findRabbit(gameArray, cellsArround){
+function findRabbit(gameArray, cellsArround) {
   const rabbitCoords = findCharacter(gameArray, cellsArround, RABBIT)
-  return rabbitCoords.length>0
+  return rabbitCoords.length > 0
 }
 
-function findEmptyCells(gameArray, cellsArround){
+function findEmptyCells(gameArray, cellsArround) {
   const cellsCoords = findCharacter(gameArray, cellsArround, EMPTY_CELL)
   return cellsCoords
 }
@@ -190,12 +198,16 @@ function findEmptyCellsArroundWolf(gameArray, [x, y]) {
     [x, y - 1],
     [x, y + 1],
   ]
-  const emptyCells = movementDirections.filter((cell) =>isInRange(cell, gameArray))
+  const emptyCells = movementDirections.filter((cell) =>
+    isInRange(cell, gameArray)
+  )
   return emptyCells
 }
 
 function calculateDistanceOfCells(freeVellsArray, rabbitCords) {
-  return freeVellsArray.map( cord => calculateDistanceFromRabbit(cord, rabbitCords))
+  return freeVellsArray.map((cord) =>
+    calculateDistanceFromRabbit(cord, rabbitCords)
+  )
 }
 
 function getClosestIndex(distanceArray) {
@@ -203,7 +215,8 @@ function getClosestIndex(distanceArray) {
   return distanceArray.indexOf(max)
 }
 
-const equals = (firstArray, secondArray) => JSON.stringify(firstArray) === JSON.stringify(secondArray)
+const equals = (firstArray, secondArray) =>
+  JSON.stringify(firstArray) === JSON.stringify(secondArray)
 
 function placeWolvesIntoNewCells(gameArray, wolvesCords, item) {
   if (wolvesCords != undefined) {
@@ -232,7 +245,7 @@ function checkDirAndMove(newCords, napCords, gameObject) {
     gameArray[x][y] = EMPTY_CELL
   } else if (gameArray[j][k] === HOUSE) {
     gameArray[x][y] = EMPTY_CELL
-    changeGameStatus(gameObject, "win") 
+    changeGameStatus(gameObject, "win")
     return
   } else if (gameArray[j][k] === FENCE) {
     return
@@ -311,38 +324,38 @@ function clearGameArea(gameObject) {
   containerNode.innerHTML = ""
 }
 
-function createInnerDivs(cellIndex, gameObject) {
+function createInnerDivs(gameObject) {
   const containerNode = getHtmlElement(gameObject, "game_area")
   const div = document.createElement("div")
-  div.setAttribute("id", cellIndex)
   containerNode.append(div)
 }
-function insertCharacterImage(character, cellIndex) {
-  const div = document.getElementById(cellIndex)
+function insertCharacterImage(character, divNumber, gameObject) {
+  const div = getHtmlElement(gameObject, "game_area").children
   const img = document.createElement("img")
   img.src = gallery[character]
   img.style.width = "60px"
-  div.append(img)
+  div.item(divNumber).append(img)
 }
 
 function drawGameArea(gameObject) {
+  let divNumber = 0
   gameArray = gameObject.gameArray
   gameArray.forEach((row, i) => {
     row.forEach((column, j) => {
-      const cellIndex = gameObject.gameBoardNumber.toString() + i.toString() + j.toString()
-      createInnerDivs(cellIndex, gameObject)
+      createInnerDivs(gameObject)
       if (column === RABBIT) {
-        insertCharacterImage(RABBIT, cellIndex)
+        insertCharacterImage(RABBIT, divNumber, gameObject)
       }
       if (column === WOLF) {
-        insertCharacterImage(WOLF, cellIndex)
+        insertCharacterImage(WOLF, divNumber, gameObject)
       }
       if (column === FENCE) {
-        insertCharacterImage(FENCE, cellIndex)
+        insertCharacterImage(FENCE, divNumber, gameObject)
       }
       if (column === HOUSE) {
-        insertCharacterImage(HOUSE, cellIndex)
+        insertCharacterImage(HOUSE, divNumber, gameObject)
       }
+      divNumber++
     })
   })
 }
@@ -361,7 +374,7 @@ function showGameMessages(gameObject) {
   const message = document.querySelector(message_div_h2)
   const gameBoard = getHtmlElement(gameObject, "header")
   gameBoard.style.display = "none"
-  if (gameObject.gameMessage === 'over') {
+  if (gameObject.gameMessage === "over") {
     message.innerText = "Game over"
   } else if (gameObject.gameMessage === "win") {
     message.innerText = "You win"
@@ -377,29 +390,20 @@ function getPossibleMoves([x, y]) {
     [x, y + 1],
   ]
 }
-
+function teleport([x, y]) {
+  const maxValue = gameArray.length
+  x = (x + maxValue) % maxValue
+  y = (y + maxValue) % maxValue
+  return [x, y]
+}
 function correctMoves(cordsArray, gameArray) {
-  const correctedArray = cordsArray.map(([x, y]) => {
-    if (x < 0) {
-      x = gameArray.length - 1
-    }
-    if (x > gameArray.length - 1) {
-      x = 0
-    }
-    if (y < 0) {
-      y = gameArray.length - 1
-    }
-    if (y > gameArray.length - 1) {
-      y = 0
-    }
-    return [x, y]
-  })
+  const correctedArray = cordsArray.map(([x, y]) => teleport([x, y]))
   return correctedArray
 }
 
-function changeGameStatus(gameObject, winOrLose){
-    gameObject.gameRunning = false
-    gameObject.gameMessage = winOrLose
+function changeGameStatus(gameObject, gameStatus) {
+  gameObject.gameRunning = false
+  gameObject.gameMessage = gameStatus
 }
 
 function removeListener(element) {
@@ -407,11 +411,11 @@ function removeListener(element) {
   element.parentNode.replaceChild(newBtnElement, element)
 }
 
-function getHtmlElement(gameObject, elementId){
+function getHtmlElement(gameObject, elementId) {
   return document.getElementById(elementId + gameObject.gameBoardNumber)
 }
 
-function removeMovementEventListeners(gameObject){
+function removeMovementEventListeners(gameObject) {
   removeListener(getHtmlElement(gameObject, "up"))
   removeListener(getHtmlElement(gameObject, "down"))
   removeListener(getHtmlElement(gameObject, "right"))
