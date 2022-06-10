@@ -21,7 +21,7 @@ function getTemplate(templateNumber) {
   <div id="${"main_area" + templateNumber}" class="main_area">
     <div class="header" id="${"header" + templateNumber}">
       <div class="game_size_buttons">
-        <button id = "game_start_btn${templateNumber}" class = "button-32">Start the game</button>
+        <button class = "game_start_btn${templateNumber}" class = "button-32">Start the game</button>
         <select id="${"select" + templateNumber}">
           <option value="5">5X5</option>
           <option value="7">7X7</option>
@@ -32,7 +32,7 @@ function getTemplate(templateNumber) {
   </div>
   <div id="${"message_div" + templateNumber}" class="message_div">
     <h2></h2>
-    <button id = "game_start_btn-1${templateNumber}">Start Again</button>
+    <button class = "game_start_btn${templateNumber}">Start Again</button>
   </div>
   </div>
   <div class="game_buttons" id="${"game_buttons" + templateNumber}">
@@ -65,10 +65,10 @@ function createButtonsandBoard() {
   container.append(newWrapper)
 }
 function addGameStartEventListeners(gameNumber) {
-  const startButton = document.getElementById(`game_start_btn${gameNumber}`)
-  const startButtonMessage = document.getElementById(`game_start_btn-1${gameNumber}`)
-  startButton.addEventListener("click", () => gameStart(gameNumber))
-  startButtonMessage.addEventListener("click", () => gameStart(gameNumber))
+  const startButton = document.getElementsByClassName(`game_start_btn${gameNumber}`)
+  for(let i=0; i < startButton.length; i++){
+    startButton[i].addEventListener("click", () => gameStart(gameNumber))
+  }
 }
 const gallery = new Array()
 
@@ -87,7 +87,6 @@ function gameStart(gameBoardNumber) {
     gameMessage: "",
     gameBoardNumber: gameBoardNumber,
   }
-  console.log(gameState)
   removeMovementEventListeners(gameState)
   setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
   insertAllCharacters(gameState.gameArray)
