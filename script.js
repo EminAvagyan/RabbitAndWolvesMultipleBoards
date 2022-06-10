@@ -203,7 +203,7 @@ function getClosestIndex(distanceArray) {
   return distanceArray.indexOf(max)
 }
 
-const equals = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const equals = (firstArray, secondArray) => JSON.stringify(firstArray) === JSON.stringify(secondArray)
 
 function placeWolvesIntoNewCells(gameArray, wolvesCords, item) {
   if (wolvesCords != undefined) {
@@ -275,9 +275,9 @@ function insertAllCharacters(gameArray) {
 }
 
 function createGameArray(gameAreaSize) {
-  const gameCondition = new gameArray(gameAreaSize)
+  const gameCondition = new Array(gameAreaSize)
     .fill(EMPTY_CELL)
-    .map(() => new gameArray(gameAreaSize).fill(EMPTY_CELL))
+    .map(() => new Array(gameAreaSize).fill(EMPTY_CELL))
 
   return gameCondition
 }
@@ -299,9 +299,7 @@ function findEmptyCell(gameArray) {
 }
 
 function insertCharactersIntoArray(gameArray, character, gameBoardNumber) {
-  for (let i = 0; i < gameBoardNumber
-
-; i++) {
+  for (let i = 0; i < gameBoardNumber; i++) {
     const cords = findEmptyCell(gameArray)
     insertSingleCharacter(cords, gameArray, character)
   }
