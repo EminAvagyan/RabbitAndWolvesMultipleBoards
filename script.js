@@ -13,13 +13,15 @@ const right = 3
 
 let gameBoardNumber = 0
 const createGameArea = document.getElementById("create_new_game_area")
-createGameArea.addEventListener("click", drawNewBoard)
+createGameArea.addEventListener("click", ()=>{
+  ++gameBoardNumber
+  drawNewBoard(gameBoardNumber)} )
 function getTemplate(templateNumber) {
   const template = `
   <div id="${"main_area" + templateNumber}" class="main_area">
     <div class="header" id="${"header" + templateNumber}">
       <div class="game_size_buttons">
-        <button class = "game_start_btn${templateNumber}" class = "button-32">Start the game</button>
+        <button id = "game_start_btn${templateNumber}" class = "button-32">Start the game</button>
         <select id="${"select" + templateNumber}">
           <option value="5">5X5</option>
           <option value="7">7X7</option>
@@ -30,7 +32,7 @@ function getTemplate(templateNumber) {
   </div>
   <div id="${"message_div" + templateNumber}" class="message_div">
     <h2></h2>
-    <button class = "game_start_btn${templateNumber}">Start Again</button>
+    <button id = "game_start_btn-1${templateNumber}">Start Again</button>
   </div>
   </div>
   <div class="game_buttons" id="${"game_buttons" + templateNumber}">
@@ -48,13 +50,12 @@ function getTemplate(templateNumber) {
   `
   return template
 }
-function drawNewBoard() {
+function drawNewBoard(gameNumber) {
   createButtonsandBoard()
-  addGameStartEventListeners()
+  addGameStartEventListeners(gameNumber)
 }
 
 function createButtonsandBoard() {
-  ++gameBoardNumber
   const container = document.getElementById("container")
   const template = getTemplate(gameBoardNumber)
   const newWrapper = document.createElement("div")
@@ -63,13 +64,11 @@ function createButtonsandBoard() {
   newWrapper.innerHTML = template
   container.append(newWrapper)
 }
-function addGameStartEventListeners() {
-  const startButton = document.getElementsByClassName(
-    `game_start_btn${gameBoardNumber}`
-  )
-  for (let i = 0; i < startButton.length; i++) {
-    startButton[i].addEventListener("click", () => gameStart(gameBoardNumber))
-  }
+function addGameStartEventListeners(gameNumber) {
+  const startButton = document.getElementById(`game_start_btn${gameNumber}`)
+  const startButtonMessage = document.getElementById(`game_start_btn-1${gameNumber}`)
+  startButton.addEventListener("click", () => gameStart(gameNumber))
+  startButtonMessage.addEventListener("click", () => gameStart(gameNumber))
 }
 const gallery = new Array()
 
@@ -88,6 +87,7 @@ function gameStart(gameBoardNumber) {
     gameMessage: "",
     gameBoardNumber: gameBoardNumber,
   }
+  console.log(gameState)
   removeMovementEventListeners(gameState)
   setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
   insertAllCharacters(gameState.gameArray)
