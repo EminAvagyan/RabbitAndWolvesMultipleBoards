@@ -66,8 +66,8 @@ function createButtonsandBoard() {
 }
 function addGameStartEventListeners(gameNumber) {
   const startButton = document.getElementsByClassName(`game_start_btn${gameNumber}`)
-  for(let i=0; i < startButton.length; i++){
-    startButton[i].addEventListener("click", () => gameStart(gameNumber))
+  for(let btn of startButton){
+    btn.addEventListener("click", () => gameStart(gameNumber))
   }
 }
 const gallery = new Array()
@@ -86,10 +86,12 @@ function gameStart(gameBoardNumber) {
     gameRunning: true,
     gameMessage: "",
     gameBoardNumber: gameBoardNumber,
+    wolvesMovetimeOuteStatus: false
   }
   removeMovementEventListeners(gameState)
   setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
   insertAllCharacters(gameState.gameArray)
+
   hideGameMessages(gameState)
   eventListenersForRabbit(gameState, gameAreaSize)
   clearGameArea(gameState)
@@ -122,6 +124,8 @@ function eventListenersForRabbit(gameObject) {
   moveRight.addEventListener("click", function () {
     eventKeysFunctions(gameObject, right)
   })
+  
+  
 }
 
 function eventKeysFunctions(gameObject, direction) {
@@ -130,7 +134,13 @@ function eventKeysFunctions(gameObject, direction) {
     const moves = getPossibleMoves(rabbitCords)
     const allmoves = correctMoves(moves, gameObject.gameArray)
     checkDirAndMove(allmoves[direction], rabbitCords, gameObject)
-    changeWolvesPositions(gameObject)
+    if(!gameObject.wolvesMovetimeOuteStatus){
+      setTimeout(()=>changeDivBackground(gameObject), 800)
+      setTimeout(()=>changeWolvesPositions(gameObject), 1000)
+      gameObject.wolvesMovetimeOuteStatus = true
+    }
+    clearGameArea(gameObject)
+    drawGameArea(gameObject)
   } else {
     return
   }
@@ -139,9 +149,10 @@ function eventKeysFunctions(gameObject, direction) {
 function changeWolvesPositions(gameObject) {
   const wolvesCords = findCharacterCords(gameObject.gameArray, WOLF)
 
-  wolvesCords.forEach((wolf) => changeSingleWolfPosition(gameObject, wolf))
-  clearGameArea(gameObject)
-  drawGameArea(gameObject)
+    wolvesCords.forEach((wolf) => changeSingleWolfPosition(gameObject, wolf))
+    clearGameArea(gameObject)
+    drawGameArea(gameObject)
+    gameObject.wolvesMovetimeOuteStatus = false
 }
 
 function changeSingleWolfPosition(gameObject, wolf) {
@@ -328,19 +339,38 @@ function createInnerDivs(gameObject) {
   const div = document.createElement("div")
   containerNode.append(div)
 }
+
+function changeDivBackground(gameObject){
+  let divNumber = 0
+  gameArray = gameObject.gameArray
+  gameArray.forEach((row) => {
+    row.forEach((column) => {
+      if (column === WOLF) {
+        setColorToBackground(gameObject,divNumber, "red")
+      }
+      divNumber++
+    })
+  })
+}
+
+function setColorToBackground(gameObject, divNumber, color){
+  const div = getHtmlElement(gameObject, "game_area").children
+  div.item(divNumber).style.backgroundColor = color
+}
+
 function insertCharacterImage(character, divNumber, gameObject) {
   const div = getHtmlElement(gameObject, "game_area").children
   const img = document.createElement("img")
   img.src = gallery[character]
-  img.style.width = "60px"
+  img.style.width = "50px"
   div.item(divNumber).append(img)
 }
 
 function drawGameArea(gameObject) {
   let divNumber = 0
   gameArray = gameObject.gameArray
-  gameArray.forEach((row, i) => {
-    row.forEach((column, j) => {
+  gameArray.forEach((row) => {
+    row.forEach((column) => {
       createInnerDivs(gameObject)
       if (column === RABBIT) {
         insertCharacterImage(RABBIT, divNumber, gameObject)
