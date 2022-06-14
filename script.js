@@ -85,17 +85,51 @@ function gameStart(gameBoardNumber) {
     gameArray: gameArray,
     gameRunning: true,
     gameMessage: "",
-    gameBoardNumber: gameBoardNumber,
-    wolvesMovetimeOuteStatus: false
+    gameBoardNumber: gameBoardNumber
   }
+  // clearAllIntervals(gameState:gameBoardNumber)
+ 
+  
   removeMovementEventListeners(gameState)
   setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
   insertAllCharacters(gameState.gameArray)
 
   hideGameMessages(gameState)
-  eventListenersForRabbit(gameState, gameAreaSize)
+  
   clearGameArea(gameState)
   drawGameArea(gameState)
+  eventListenersForRabbit(gameState, gameAreaSize)
+
+      const wolvesTimeIntervalId = window.setInterval(()=>changeWolvesPositions(gameState), 2000)
+      const changeWolvesBackground = window.setInterval(()=>changeDivBackground(gameState), 1800)
+
+      clearAllIntervals(changeWolvesBackground, wolvesTimeIntervalId)
+
+
+  function changeWolvesPositions(gameObject) {
+    if(gameObject.gameRunning === false){
+      clearInterval(wolvesTimeIntervalId)
+      clearInterval(changeWolvesBackground)
+      return
+    } else {
+      const wolvesCords = findCharacterCords(gameObject.gameArray, WOLF)
+      wolvesCords.forEach((wolf) => changeSingleWolfPosition(gameObject, wolf))
+      clearGameArea(gameObject)
+      drawGameArea(gameObject)
+    }
+    
+  }
+}
+
+function clearAllIntervals(firstInterval, secondInterval){
+  for(i=1; i<firstInterval-1; i++)
+  {
+      window.clearInterval(i);
+  }
+  for(j=1; j<secondInterval-1; j++)
+  {
+      window.clearInterval(j);
+  }
 }
 
 function setGameAreWidth(gameAreaSize, gameBoardNumber) {
@@ -129,36 +163,23 @@ function eventListenersForRabbit(gameObject) {
 }
 
 function eventKeysFunctions(gameObject, direction) {
-  if (gameObject.gameRunning === true) {
-    const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)[0]
-    const moves = getPossibleMoves(rabbitCords)
-    const allmoves = correctMoves(moves, gameObject.gameArray)
-    checkDirAndMove(allmoves[direction], rabbitCords, gameObject)
-    if(!gameObject.wolvesMovetimeOuteStatus){
-      setTimeout(()=>changeDivBackground(gameObject), 800)
-      setTimeout(()=>changeWolvesPositions(gameObject), 1000)
-      gameObject.wolvesMovetimeOuteStatus = true
-    }
-    clearGameArea(gameObject)
-    drawGameArea(gameObject)
-  } else {
+  if (gameObject.gameRunning === false) {
+    showGameMessages(gameObject)
     return
-  }
-}
-
-function changeWolvesPositions(gameObject) {
-  const wolvesCords = findCharacterCords(gameObject.gameArray, WOLF)
-
-    wolvesCords.forEach((wolf) => changeSingleWolfPosition(gameObject, wolf))
+  } else {
+    const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)[0]
+    const rabbitPossibleMoves = getPossibleMoves(rabbitCords)
+    const rabbitLegalMoves = correctMoves(rabbitPossibleMoves, gameObject.gameArray)
+    checkDirAndMove(rabbitLegalMoves[direction], rabbitCords, gameObject)
     clearGameArea(gameObject)
     drawGameArea(gameObject)
-    gameObject.wolvesMovetimeOuteStatus = false
+  }
 }
 
 function changeSingleWolfPosition(gameObject, wolf) {
   const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)
   const cellsArround = findEmptyCellsArroundWolf(gameObject.gameArray, wolf)
-  const freeCells = checkCells(cellsArround, gameObject)
+  const freeCells = rabbitOrEmptyCells(cellsArround, gameObject)
   if (gameObject.gameRunning === false) {
     showGameMessages(gameObject)
   } else {
@@ -185,7 +206,7 @@ function findEmptyCells(gameArray, cellsArround) {
   return cellsCoords
 }
 
-function checkCells(cellsArround, gameObject) {
+function rabbitOrEmptyCells(cellsArround, gameObject) {
   const checkIFRabbit = findRabbit(gameObject.gameArray, cellsArround)
   if (checkIFRabbit) {
     changeGameStatus(gameObject, "over")
@@ -229,7 +250,7 @@ const equals = (firstArray, secondArray) =>
   JSON.stringify(firstArray) === JSON.stringify(secondArray)
 
 function placeWolvesIntoNewCells(gameArray, wolvesCords, item) {
-  if (wolvesCords != undefined) {
+  if (wolvesCords.length>0) {
     const rabbitCords = findCharacterCords(gameArray, RABBIT)
     const [x, y] = wolvesCords
     const [k, p] = item
@@ -256,12 +277,14 @@ function checkDirAndMove(newCords, napCords, gameObject) {
   } else if (gameArray[j][k] === HOUSE) {
     gameArray[x][y] = EMPTY_CELL
     changeGameStatus(gameObject, "win")
+    showGameMessages(gameObject)
     return
   } else if (gameArray[j][k] === FENCE) {
     return
   }
   if (gameArray[j][k] === WOLF) {
     changeGameStatus(gameObject, "over")
+    showGameMessages(gameObject)
     return
   }
 }
