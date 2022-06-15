@@ -56,6 +56,8 @@ function drawNewBoard(gameNumber) {
   addGameStartEventListeners(gameNumber)
 }
 
+const intervalArraysObject = {}
+
 function createButtonsandBoard() {
   const container = document.getElementById("container")
   const template = getTemplate(gameBoardNumber)
@@ -84,36 +86,48 @@ function gameStart(gameBoardNumber) {
   const select = "select" + gameBoardNumber
   const gameAreaSize = parseInt(document.getElementById(select).value)
   const gameArray = createGameArray(gameAreaSize)
-  for (k = 0; k < 1000; k++) {
-    window.clearInterval(k)
-  }
 
-  
-  const changeWolvesPositionsInterval = setInterval(() => {
+  setGameAreWidth(gameAreaSize, gameBoardNumber)
+  insertAllCharacters(gameArray)
+
+  const gameArrayNumber = "array" + gameBoardNumber
+  clearGameBoardIvents(gameArrayNumber)
+
+  const setWolvesTimeInterval = setInterval(() => {
     changeWolvesPositions(gameState)
-  }, 2000+Math.random()*100)
-  const changeWolvesBackgroundsInterval = setInterval(() => {
-    console.log(2000+Math.random()*100)
-    changeDivBackground(gameState)
-  }, (2000+Math.random()*100)-200)
+  }, 2000 + Math.random() * 100)
+
   const gameState = {
     gameArray,
     gameRunning: true,
     gameMessage: "",
     gameBoardNumber,
-    wolvesTimeInterval: changeWolvesPositionsInterval,
-    wolvesBackgrounds: changeWolvesBackgroundsInterval,
+    wolvesTimeInterval: setWolvesTimeInterval,
   }
 
+  addIntervalIdToIntervalObject(gameArrayNumber, gameState.wolvesTimeInterval)
+
   removeMovementEventListeners(gameState)
-  setGameAreWidth(gameAreaSize, gameState.gameBoardNumber)
-  insertAllCharacters(gameState.gameArray)
-
   hideGameMessages(gameState)
-
   clearGameArea(gameState)
   drawGameArea(gameState)
   eventListenersForRabbit(gameState, gameAreaSize)
+}
+
+function clearGameBoardIvents(gameArrayNumber) {
+  if (intervalArraysObject[gameArrayNumber]) {
+    intervalArraysObject[gameArrayNumber].map((intervalId) =>
+      clearInterval(intervalId)
+    )
+    intervalArraysObject[gameArrayNumber] = []
+  }
+}
+
+function addIntervalIdToIntervalObject(gameBoardNumber, intervalId) {
+  if (!intervalArraysObject[gameBoardNumber]) {
+    intervalArraysObject[gameBoardNumber] = []
+  }
+  intervalArraysObject[gameBoardNumber].push(intervalId)
 }
 
 function changeWolvesPositions(gameObject) {
@@ -126,7 +140,9 @@ function changeWolvesPositions(gameObject) {
       clearIntervalsAndSHowMessage(gameObject)
       return
     } else {
-      changeSingleWolfPosition(gameObject, wolf)
+      const randomInterval = 500 + Math.random() * 500
+      setTimeout(() => changeSingleWolfPosition(gameObject, wolf), randomInterval)
+      setTimeout(() => changeDivBackground(gameObject, wolf), randomInterval - 200)
     }
   })
   clearGameArea(gameObject)
@@ -135,7 +151,6 @@ function changeWolvesPositions(gameObject) {
 
 function clearIntervalsAndSHowMessage(gameObject) {
   clearInterval(gameObject.wolvesTimeInterval)
-  clearInterval(gameObject.wolvesBackgrounds)
   showGameMessages(gameObject)
 }
 
@@ -174,9 +189,7 @@ function eventKeysFunctions(gameObject, direction) {
   } else {
     const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)[0]
     const rabbitPossibleMoves = getPossibleMoves(rabbitCords)
-    const rabbitLegalMoves = correctMoves(
-      rabbitPossibleMoves
-    )
+    const rabbitLegalMoves = correctMoves(rabbitPossibleMoves)
     checkDirAndMove(rabbitLegalMoves[direction], rabbitCords, gameObject)
     clearGameArea(gameObject)
     drawGameArea(gameObject)
@@ -185,7 +198,7 @@ function eventKeysFunctions(gameObject, direction) {
 
 function changeSingleWolfPosition(gameObject, wolf) {
   const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)
-  const cellsArround = findEmptyCellsArroundWolf(gameObject.gameArray, wolf)
+  const cellsArround = getWovesLegalMoves(gameObject.gameArray, wolf)
   const freeCells = rabbitOrEmptyCells(cellsArround, gameObject)
   if (gameObject.gameRunning === false) {
     clearIntervalsAndSHowMessage(gameObject)
@@ -193,13 +206,13 @@ function changeSingleWolfPosition(gameObject, wolf) {
     const distanceArray = calculateDistanceOfCells(freeCells, rabbitCords)
     const closestCell = freeCells[getClosestIndex(distanceArray)]
     placeWolvesIntoNewCells(gameObject.gameArray, closestCell, wolf)
+    clearGameArea(gameObject)
+    drawGameArea(gameObject)
   }
 }
 
 function findCharacter(gameArray, cellsArround, character) {
-  return cellsArround.filter(
-    ([x, y]) => gameArray[x][y] === character
-  )
+  return cellsArround.filter(([x, y]) => gameArray[x][y] === character)
 }
 
 function findRabbit(gameArray, cellsArround) {
@@ -208,7 +221,7 @@ function findRabbit(gameArray, cellsArround) {
 }
 
 function findEmptyCells(gameArray, cellsArround) {
-  return findCharacter(gameArray, cellsArround, EMPTY_CELL) 
+  return findCharacter(gameArray, cellsArround, EMPTY_CELL)
 }
 
 function rabbitOrEmptyCells(cellsArround, gameObject) {
@@ -217,13 +230,16 @@ function rabbitOrEmptyCells(cellsArround, gameObject) {
     changeGameStatus(gameObject, "over")
     return
   } else {
-    return findEmptyCells(gameObject.gameArray, cellsArround) 
+    return findEmptyCells(gameObject.gameArray, cellsArround)
   }
 }
 
-const isInRange = (gameArray) => ([x, y]) => x >= 0 && x < gameArray.length && y >= 0 && y < gameArray.length
+const isInRange =
+  (gameArray) =>
+  ([x, y]) =>
+    x >= 0 && x < gameArray.length && y >= 0 && y < gameArray.length
 
-function findEmptyCellsArroundWolf(gameArray, [x, y]) {
+function getWovesLegalMoves(gameArray, [x, y]) {
   let movementDirections = [
     [x, y],
     [x - 1, y],
@@ -231,8 +247,7 @@ function findEmptyCellsArroundWolf(gameArray, [x, y]) {
     [x, y - 1],
     [x, y + 1],
   ]
-  return movementDirections.filter(isInRange(gameArray)  )
-  
+  return movementDirections.filter(isInRange(gameArray))
 }
 
 function calculateDistanceOfCells(freeVellsArray, rabbitCords) {
@@ -250,16 +265,14 @@ const equals = (firstArray, secondArray) =>
   JSON.stringify(firstArray) === JSON.stringify(secondArray)
 
 function placeWolvesIntoNewCells(gameArray, wolvesCords, item) {
-  if (wolvesCords.length > 0) {
-    const rabbitCords = findCharacterCords(gameArray, RABBIT)
-    const [x, y] = wolvesCords
-    const [k, p] = item
-    if (equals([x, y], rabbitCords)) {
-      changeGameStatus(gameObject, "over")
-    } else {
-      gameArray[x][y] = WOLF
-      gameArray[k][p] = EMPTY_CELL
-    }
+  const rabbitCords = findCharacterCords(gameArray, RABBIT)
+  const [x, y] = wolvesCords
+  const [k, p] = item
+  if (equals([x, y], rabbitCords)) {
+    changeGameStatus(gameObject, "over")
+  } else {
+    gameArray[x][y] = WOLF
+    gameArray[k][p] = EMPTY_CELL
   }
 }
 
@@ -362,12 +375,14 @@ function createInnerDivs(gameObject) {
   containerNode.append(div)
 }
 
-function changeDivBackground(gameObject) {
+function changeDivBackground(gameObject, [x, y]) {
   let divNumber = 0
+  const cord2 = x.toString() + y.toString()
   gameArray = gameObject.gameArray
-  gameArray.forEach((row) => {
-    row.forEach((column) => {
-      if (column === WOLF) {
+  gameArray.forEach((row, i) => {
+    row.forEach((column, j) => {
+      const cord = i.toString() + j.toString()
+      if (column === WOLF && cord === cord2) {
         setColorToBackground(gameObject, divNumber, "red")
       }
       divNumber++
@@ -448,7 +463,7 @@ function teleport([x, y]) {
   return [x, y]
 }
 function correctMoves(cordsArray) {
-  return correctedArray = cordsArray.map(([x, y]) => teleport([x, y]))
+  return (correctedArray = cordsArray.map(([x, y]) => teleport([x, y])))
 }
 
 function changeGameStatus(gameObject, gameStatus) {
