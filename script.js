@@ -126,11 +126,10 @@ function changeWolvesPositions(gameObject) {
     if (gameObject.gameRunning === false) {
       showGameMessages(gameObject)
       return
-    } else {
+    }
       const randomInterval = 500 + Math.random() * 500
       setTimeout(() => changeSingleWolfPosition(gameObject, wolf), randomInterval)
       setTimeout(() => changeDivBackground(gameObject, wolf), randomInterval - 200)
-    }
   })
   clearGameArea(gameObject)
   drawGameArea(gameObject)
@@ -168,14 +167,13 @@ function eventKeysFunctions(gameObject, direction) {
   if (gameObject.gameRunning === false) {
     showGameMessages(gameObject)
     return
-  } else {
+  }
     const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)[0]
     const rabbitPossibleMoves = getPossibleMoves(rabbitCords)
     const rabbitLegalMoves = correctMoves(rabbitPossibleMoves)
     checkDirAndMove(rabbitLegalMoves[direction], rabbitCords, gameObject)
     clearGameArea(gameObject)
     drawGameArea(gameObject)
-  }
 }
 
 function changeSingleWolfPosition(gameObject, wolf) {
@@ -252,6 +250,7 @@ function placeWolvesIntoNewCells(gameArray, wolvesCords, item) {
   const [k, p] = item
   if (equals([x, y], rabbitCords)) {
     changeGameStatus(gameObject, "over")
+    return
   } else {
     gameArray[x][y] = WOLF
     gameArray[k][p] = EMPTY_CELL
