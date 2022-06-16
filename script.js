@@ -56,7 +56,7 @@ function drawNewBoard(gameNumber) {
   addGameStartEventListeners(gameNumber)
 }
 
-const intervalArraysObject = {}
+const gameStatesObject = {}
 
 function createButtonsandBoard() {
   const container = document.getElementById("container")
@@ -83,21 +83,19 @@ gallery[3] = "images/home.png"
 gallery[4] = "images/rabbit.png"
 
 function gameStart(gameBoardNumber) {
-  const select = "select" + gameBoardNumber
-  const gameAreaSize = parseInt(document.getElementById(select).value)
+  const gameAreaSize = parseInt(document.getElementById(`select${gameBoardNumber}`).value)
   const gameArray = createGameArray(gameAreaSize)
 
   setGameAreWidth(gameAreaSize, gameBoardNumber)
   insertAllCharacters(gameArray)
 
-  const gameArrayNumber = "array" + gameBoardNumber
-  clearGameBoardIvents(gameArrayNumber)
+  clearGameBoardIntervals(gameBoardNumber)
 
   const setWolvesTimeInterval = setInterval(() => {
-    changeWolvesPositions(gameState)
+    changeWolvesPositions(gameStatesObject[gameBoardNumber])
   }, 2000 + Math.random() * 100)
 
-  const gameState = {
+  gameStatesObject[gameBoardNumber] = {
     gameArray,
     gameRunning: true,
     gameMessage: "",
@@ -105,8 +103,7 @@ function gameStart(gameBoardNumber) {
     wolvesTimeInterval: setWolvesTimeInterval,
   }
 
-  addIntervalIdToIntervalObject(gameArrayNumber, gameState.wolvesTimeInterval)
-
+const gameState = gameStatesObject[gameBoardNumber]
   removeMovementEventListeners(gameState)
   hideGameMessages(gameState)
   clearGameArea(gameState)
@@ -114,20 +111,10 @@ function gameStart(gameBoardNumber) {
   eventListenersForRabbit(gameState, gameAreaSize)
 }
 
-function clearGameBoardIvents(gameArrayNumber) {
-  if (intervalArraysObject[gameArrayNumber]) {
-    intervalArraysObject[gameArrayNumber].map((intervalId) =>
-      clearInterval(intervalId)
-    )
-    intervalArraysObject[gameArrayNumber] = []
-  }
-}
-
-function addIntervalIdToIntervalObject(gameBoardNumber, intervalId) {
-  if (!intervalArraysObject[gameBoardNumber]) {
-    intervalArraysObject[gameBoardNumber] = []
-  }
-  intervalArraysObject[gameBoardNumber].push(intervalId)
+function clearGameBoardIntervals(gameBoardNumber) {
+  if(gameStatesObject[gameBoardNumber]){
+    clearInterval(gameStatesObject[gameBoardNumber].wolvesTimeInterval)
+    }
 }
 
 function changeWolvesPositions(gameObject) {
@@ -137,7 +124,7 @@ function changeWolvesPositions(gameObject) {
   }
   wolvesCords.forEach((wolf) => {
     if (gameObject.gameRunning === false) {
-      clearIntervalsAndSHowMessage(gameObject)
+      showGameMessages(gameObject)
       return
     } else {
       const randomInterval = 500 + Math.random() * 500
@@ -147,11 +134,6 @@ function changeWolvesPositions(gameObject) {
   })
   clearGameArea(gameObject)
   drawGameArea(gameObject)
-}
-
-function clearIntervalsAndSHowMessage(gameObject) {
-  clearInterval(gameObject.wolvesTimeInterval)
-  showGameMessages(gameObject)
 }
 
 function setGameAreWidth(gameAreaSize, gameBoardNumber) {
@@ -184,7 +166,7 @@ function eventListenersForRabbit(gameObject) {
 
 function eventKeysFunctions(gameObject, direction) {
   if (gameObject.gameRunning === false) {
-    clearIntervalsAndSHowMessage(gameObject)
+    showGameMessages(gameObject)
     return
   } else {
     const rabbitCords = findCharacterCords(gameObject.gameArray, RABBIT)[0]
@@ -201,7 +183,7 @@ function changeSingleWolfPosition(gameObject, wolf) {
   const cellsArround = getWovesLegalMoves(gameObject.gameArray, wolf)
   const freeCells = rabbitOrEmptyCells(cellsArround, gameObject)
   if (gameObject.gameRunning === false) {
-    clearIntervalsAndSHowMessage(gameObject)
+    showGameMessages(gameObject)
   } else {
     const distanceArray = calculateDistanceOfCells(freeCells, rabbitCords)
     const closestCell = freeCells[getClosestIndex(distanceArray)]
@@ -289,14 +271,12 @@ function checkDirAndMove(newCords, napCords, gameObject) {
     gameArray[x][y] = EMPTY_CELL
   } else if (gameArray[j][k] === HOUSE) {
     changeGameStatus(gameObject, "win")
-    clearIntervalsAndSHowMessage(gameObject)
     return
   } else if (gameArray[j][k] === FENCE) {
     return
   }
   if (gameArray[j][k] === WOLF) {
     changeGameStatus(gameObject, "over")
-    clearIntervalsAndSHowMessage(gameObject)
     return
   }
 }
