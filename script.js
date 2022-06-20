@@ -11,11 +11,20 @@ const down = 1
 const left = 2
 const right = 3
 
-let gameBoardNumber = 0
+const GAME_STATE_OBJECTS = {}
+
+const gallery = new Array()
+gallery[1] = "images/gamewolf.png"
+gallery[2] = "images/ban.png"
+gallery[3] = "images/home.png"
+gallery[4] = "images/rabbit.png"
+
+let GAME_BOARD_NUMBER = 0
+
 const createGameArea = document.getElementById("create_new_game_area")
 createGameArea.addEventListener("click", () => {
-  ++gameBoardNumber
-  drawNewBoard(gameBoardNumber)
+  ++GAME_BOARD_NUMBER
+  drawNewBoard(GAME_BOARD_NUMBER)
 })
 function getTemplate(templateNumber) {
   const template = `
@@ -51,18 +60,16 @@ function getTemplate(templateNumber) {
   `
   return template
 }
-function drawNewBoard(gameNumber) {
+function drawNewBoard(gameBoardNumber) {
   createButtonsandBoard()
-  addGameStartEventListeners(gameNumber)
+  addGameStartEventListeners(gameBoardNumber)
 }
-
-const gameStatesObject = {}
 
 function createButtonsandBoard() {
   const container = document.getElementById("container")
-  const template = getTemplate(gameBoardNumber)
+  const template = getTemplate(GAME_BOARD_NUMBER)
   const newWrapper = document.createElement("div")
-  newWrapper.id = "wrapper" + gameBoardNumber
+  newWrapper.id = "wrapper" + GAME_BOARD_NUMBER
   newWrapper.setAttribute("class", "wrapper")
   newWrapper.innerHTML = template
   container.append(newWrapper)
@@ -75,12 +82,6 @@ function addGameStartEventListeners(gameNumber) {
     btn.addEventListener("click", () => gameStart(gameNumber))
   }
 }
-const gallery = new Array()
-
-gallery[1] = "images/gamewolf.png"
-gallery[2] = "images/ban.png"
-gallery[3] = "images/home.png"
-gallery[4] = "images/rabbit.png"
 
 function gameStart(gameBoardNumber) {
   const gameAreaSize = parseInt(document.getElementById(`select${gameBoardNumber}`).value)
@@ -92,10 +93,10 @@ function gameStart(gameBoardNumber) {
   clearGameBoardIntervals(gameBoardNumber)
 
   const setWolvesTimeInterval = setInterval(() => {
-    changeWolvesPositions(gameStatesObject[gameBoardNumber])
+    changeWolvesPositions(GAME_STATE_OBJECTS[gameBoardNumber])
   }, 2000 + Math.random() * 100)
 
-  gameStatesObject[gameBoardNumber] = {
+  GAME_STATE_OBJECTS[gameBoardNumber] = {
     gameArray,
     gameRunning: true,
     gameMessage: "",
@@ -103,7 +104,7 @@ function gameStart(gameBoardNumber) {
     wolvesTimeInterval: setWolvesTimeInterval,
   }
 
-const gameState = gameStatesObject[gameBoardNumber]
+const gameState = GAME_STATE_OBJECTS[GAME_BOARD_NUMBER]
   removeMovementEventListeners(gameState)
   hideGameMessages(gameState)
   clearGameArea(gameState)
@@ -112,8 +113,8 @@ const gameState = gameStatesObject[gameBoardNumber]
 }
 
 function clearGameBoardIntervals(gameBoardNumber) {
-  if(gameStatesObject[gameBoardNumber]){
-    clearInterval(gameStatesObject[gameBoardNumber].wolvesTimeInterval)
+  if(GAME_STATE_OBJECTS[gameBoardNumber]){
+    clearInterval(GAME_STATE_OBJECTS[gameBoardNumber].wolvesTimeInterval)
     }
 }
 
